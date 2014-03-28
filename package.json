@@ -15,6 +15,7 @@
     "rimraf": "~2.2.6"
   },
   "dependencies": {
-    "sharder": "0.0.2"
+    "sharder": "0.0.2",
+    "async": "~0.2.10"
   }
 }

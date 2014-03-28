@@ -4,14 +4,12 @@
 
 "use strict";
 
-
 var seneca = require('seneca')
 var shared = seneca.test.store.shared
 var fs = require('fs')
 var rimraf = require('rimraf')
 
-
-describe('single', function(){
+describe('double', function(){
   var si = seneca()
   var db1 = __dirname + '/db1'
   var db2 = __dirname + '/db2'
@@ -21,14 +19,14 @@ describe('single', function(){
 
   si.use(require('seneca-jsonfile-store'),{
     map: {
-      '-/-/store1': '*'
+      'store1/-/-': '*'
     },
     folder: __dirname + '/db1'
   })
 
   si.use(require('seneca-jsonfile-store'),{
     map: {
-      '-/-/store2': '*'
+      'store2/-/-': '*'
     },
     folder: __dirname + '/db2'
   })
@@ -36,11 +34,11 @@ describe('single', function(){
   si.use(require('..'),{
     shards: {
       1: {
-        name: 'store1',
+        zone: 'store1',
         append: true
       },
       2: {
-        name: 'store2',
+        zone: 'store2',
         append: true
       }
     }
