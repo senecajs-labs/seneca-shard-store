@@ -1,12 +1,20 @@
 {
-  "name": "seneca-shard",
+  "name": "seneca-shard-store",
   "version": "0.0.0",
   "description": "Sharding for Seneca",
   "main": "index.js",
   "scripts": {
     "test": "mocha test/"
   },
-  "author": "",
+  "website": "https://github.com/mcollina/seneca-shard-store",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mcollina/seneca-shard-store.git"
+  },
+  "bugs": {
+    "url": "http://github.com/mcollina/seneca-shard-store/issues"
+  },
+  "author": "Matteo Collina <hello@matteocollina.com>",
   "license": "ISC",
   "devDependencies": {
     "mocha": "~1.18.2",
