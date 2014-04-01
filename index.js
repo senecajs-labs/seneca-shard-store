@@ -14,12 +14,7 @@ module.exports = function(seneca,opts,cb) {
 
   var shards = sharder(opts);
 
-  function shardWrap(args, cb) {
-    var ent = args.ent
-    ent.id = ent.id || shards.generate()
-
-    var shard = shards.resolve(ent.id)
-
+  function act(args, shard, cb, skipError) {
     var toact = Object.create(args)
 
     if (shard.name)
@@ -31,28 +26,38 @@ module.exports = function(seneca,opts,cb) {
     if (shard.zone)
       toact.zone = shard.zone
 
-    seneca.act(toact, cb)
+    seneca.act(toact, function(err, result) {
+      cb(!skipError && err, result)
+    })
+  }
+
+  function shardWrap(args, cb) {
+    var id
+
+    if (args.ent) {
+      id = args.ent.id
+    } else if (args.q) {
+      id = args.q.id
+    }
+
+    if (args.cmd === 'save' & !id) {
+      args.ent.id = args.ent.id || shards.generate()
+      id = args.ent.id
+    } else {
+      return shardWrapAll(args, function(err, list) {
+        cb(err, list && list[0])
+      })
+    }
+
+    var shard = shards.resolve(id)
+
+    act(args, shard, cb)
   }
 
   function shardWrapAll(args, cb) {
     // TODO should we handle reordering of results?
     async.concat(Object.keys(shards.shards), function(shard, cb) {
-      var toact = Object.create(args)
-      shard = shards.shards[shard]
-
-      if (shard.name)
-        toact.name = shard.name
-
-      if (shard.base)
-        toact.base = shard.base
-
-      if (shard.zone)
-        toact.zone = shard.zone
-
-      seneca.act(toact, function(err, result) {
-        // skip a single error in a shard
-        cb(null, result)
-      })
+      act(args, shards.shards[shard], cb, true)
     }, cb)
   }
 
@@ -61,7 +66,7 @@ module.exports = function(seneca,opts,cb) {
 
     save: shardWrap,
 
-    load: shardWrapAll,
+    load: shardWrap,
 
     list: shardWrapAll,
 

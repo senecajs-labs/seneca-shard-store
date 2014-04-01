@@ -63,7 +63,7 @@ describe('double', function(){
     shared.closetest(si,testcount,done)
   })
 
-  it('load with q', function(done) {
+  it('load with q.id', function(done) {
 
     var Product = si.make('product')
     var product = Product.make$({name:'pear',price:200})
@@ -73,6 +73,23 @@ describe('double', function(){
         { role:'entity', cmd:'load', q:{id:product.id}, qent:Product},
         function( err, product ) {
           assert(!err)
+          done()
+        })
+      })
+
+  })
+
+  it('load with q.name', function(done) {
+
+    var Product = si.make('product')
+    var product = Product.make$({name:'pear',price:200})
+    product.save$(function(err, product) {
+      assert(!err);
+      si.act(
+        { role:'entity', cmd:'load', q:{name:'pear'}, qent:Product},
+        function( err, product ) {
+          assert(!err)
+          assert(product)
           done()
         })
       })
