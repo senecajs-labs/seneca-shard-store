@@ -21,25 +21,38 @@ module.exports = function(seneca,opts,cb) {
     var shard = shards.resolve(ent.id)
 
     var toact = Object.create(args)
-    toact.name = shard.name
-    toact.base = shard.base
-    toact.zone = shard.zone
+
+    if (shard.name)
+      toact.name = shard.name
+
+    if (shard.base)
+      toact.base = shard.base
+
+    if (shard.zone)
+      toact.zone = shard.zone
 
     seneca.act(toact, cb)
   }
 
   function shardWrapAll(args, cb) {
     // TODO should we handle reordering of results?
-
     async.concat(Object.keys(shards.shards), function(shard, cb) {
       var toact = Object.create(args)
       shard = shards.shards[shard]
 
-      toact.name = shard.name
-      toact.base = shard.base
-      toact.zone = shard.zone
+      if (shard.name)
+        toact.name = shard.name
 
-      seneca.act(toact, cb)
+      if (shard.base)
+        toact.base = shard.base
+
+      if (shard.zone)
+        toact.zone = shard.zone
+
+      seneca.act(toact, function(err, result) {
+        // skip a single error in a shard
+        cb(null, result)
+      })
     }, cb)
   }
 
@@ -48,7 +61,7 @@ module.exports = function(seneca,opts,cb) {
 
     save: shardWrap,
 
-    load: shardWrap,
+    load: shardWrapAll,
 
     list: shardWrapAll,
 

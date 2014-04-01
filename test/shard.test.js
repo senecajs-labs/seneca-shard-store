@@ -8,6 +8,7 @@ var seneca = require('seneca')
 var shared = seneca.test.store.shared
 var fs = require('fs')
 var rimraf = require('rimraf')
+var assert = require('assert')
 
 describe('double', function(){
   var si = seneca()
@@ -60,6 +61,22 @@ describe('double', function(){
 
   it('close', function(done){
     shared.closetest(si,testcount,done)
+  })
+
+  it('load with q', function(done) {
+
+    var Product = si.make('product')
+    var product = Product.make$({name:'pear',price:200})
+    product.save$(function(err, product) {
+      assert(!err);
+      si.act(
+        { role:'entity', cmd:'load', q:{id:product.id}, qent:Product},
+        function( err, product ) {
+          assert(!err)
+          done()
+        })
+      })
+
   })
 })
 
