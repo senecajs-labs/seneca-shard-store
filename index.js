@@ -51,7 +51,7 @@ module.exports = function(seneca,opts,cb) {
 
     shard = shards.resolve(id)
 
-    args.id$ = id
+    args.ent.id$ = id
 
     act(args, shard, cb)
   }
