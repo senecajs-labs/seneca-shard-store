@@ -19,7 +19,7 @@
   "devDependencies": {
     "mocha": "~1.18.2",
     "seneca": "~0.5.15",
-    "seneca-jsonfile-store": "~0.1.3",
+    "seneca-jsonfile-store": "mcollina/seneca-jsonfile-store#custom-id",
     "rimraf": "~2.2.6"
   },
   "dependencies": {

@@ -33,6 +33,7 @@ module.exports = function(seneca,opts,cb) {
 
   function shardWrap(args, cb) {
     var id
+      , shard
 
     if (args.ent) {
       id = args.ent.id
@@ -40,16 +41,17 @@ module.exports = function(seneca,opts,cb) {
       id = args.q.id
     }
 
-    if (args.cmd === 'save' & !id) {
-      args.ent.id = args.ent.id || shards.generate()
-      id = args.ent.id
+    if (args.cmd === 'save' && !id) {
+      id = args.ent.id || shards.generate()
     } else {
       return shardWrapAll(args, function(err, list) {
         cb(err, list && list[0])
       })
     }
 
-    var shard = shards.resolve(id)
+    shard = shards.resolve(id)
+
+    args.id$ = id
 
     act(args, shard, cb)
   }
