@@ -41,17 +41,18 @@ module.exports = function(seneca,opts,cb) {
       id = args.q.id
     }
 
-    if (args.cmd === 'save' && !id) {
-      id = args.ent.id || shards.generate()
-    } else {
+    if (args.cmd !== 'save' && !id) {
       return shardWrapAll(args, function(err, list) {
         cb(err, list && list[0])
       })
     }
 
-    shard = shards.resolve(id)
+    if (args.cmd === 'save' && !id) {
+      id = args.ent.id || shards.generate()
+      args.ent.id$ = id
+    }
 
-    args.ent.id$ = id
+    shard = shards.resolve(id)
 
     act(args, shard, cb)
   }
