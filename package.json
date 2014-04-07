@@ -1,6 +1,6 @@
 {
   "name": "seneca-shard-store",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Sharding for Seneca",
   "main": "index.js",
   "scripts": {
