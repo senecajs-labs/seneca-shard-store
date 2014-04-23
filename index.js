@@ -32,6 +32,10 @@ module.exports = function(seneca,opts,cb) {
   }
 
   function shardWrap(args, cb) {
+    if(args.zone) {
+      this.prior(args, cb) // call the DB directly if the zone is already set
+    }
+
     var id
       , shard
 
@@ -42,7 +46,8 @@ module.exports = function(seneca,opts,cb) {
     }
 
     if (args.cmd !== 'save' && !id) {
-      return shardWrapAll(args, function(err, list) {
+      // shardWrapAll.call here is just to be clean and execute wrapAll in the right seneca context
+      return shardWrapAll.call(this, args, function(err, list) {
         cb(err, list && list[0])
       })
     }
@@ -58,6 +63,10 @@ module.exports = function(seneca,opts,cb) {
   }
 
   function shardWrapAll(args, cb) {
+    if(args.zone) {
+      this.prior(args, cb) // call the DB directly if the zone is already set
+    }
+
     // TODO should we handle reordering of results?
     async.concat(Object.keys(shards.shards), function(shard, cb) {
       act(args, shards.shards[shard], cb, true)
