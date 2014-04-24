@@ -4,37 +4,24 @@
  * Copyright (c) 2013 Richard Rodger, MIT License */
 "use strict";
 
-
-var sharder = require('sharder')
+var Sharder = require('sharder')
 var async = require('async')
 var name = 'shard-store'
 
+var Seneca = require('seneca')
 
-module.exports = function(seneca,opts,cb) {
+module.exports = function(seneca, opts, cb) {
 
-  var shards = sharder(opts);
-
-  function act(args, shard, cb, skipError) {
-    var toact = Object.create(args)
-
-    if (shard.name)
-      toact.name = shard.name
-
-    if (shard.base)
-      toact.base = shard.base
-
-    if (shard.zone)
-      toact.zone = shard.zone
-
-    seneca.act(toact, function(err, result) {
-      cb(!skipError && err, result)
-    })
+  for(var shardId in opts.shards) {
+    var shard = opts.shards[shardId]
+    shard.seneca = Seneca()
+    shard.seneca.use( shard.store.plugin, shard.store.options);
   }
 
+  var shards = new Sharder(opts)
+
   function shardWrap(args, cb) {
-    if(args.zone) {
-      this.prior(args, cb) // call the DB directly if the zone is already set
-    }
+    var seneca = this
 
     var id
       , shard
@@ -47,7 +34,7 @@ module.exports = function(seneca,opts,cb) {
 
     if (args.cmd !== 'save' && !id) {
       // shardWrapAll.call here is just to be clean and execute wrapAll in the right seneca context
-      return shardWrapAll.call(this, args, function(err, list) {
+      return shardWrapAll.call(seneca, args, function(err, list) {
         cb(err, list && list[0])
       })
     }
@@ -59,17 +46,21 @@ module.exports = function(seneca,opts,cb) {
 
     shard = shards.resolve(id)
 
-    act(args, shard, cb)
+    shard.seneca.act(args, cb)
   }
 
   function shardWrapAll(args, cb) {
-    if(args.zone) {
-      this.prior(args, cb) // call the DB directly if the zone is already set
-    }
-
+    var seneca = this
     // TODO should we handle reordering of results?
-    async.concat(Object.keys(shards.shards), function(shard, cb) {
-      act(args, shards.shards[shard], cb, true)
+    async.concat(Object.keys(shards.shards), function(shardId, cb) {
+      var shard = shards.shards[shardId]
+
+      shard.seneca.act(args, function(err, result) {
+        if(err) {
+          this.log.error(err)
+        }
+        cb(undefined, result)
+      })
     }, cb)
   }
 

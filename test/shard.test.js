@@ -12,6 +12,9 @@ var assert = require('assert')
 
 describe('double', function(){
   var si = seneca()
+
+  si.use('store-test')
+
   var db1 = __dirname + '/db1'
   var db2 = __dirname + '/db2'
 
