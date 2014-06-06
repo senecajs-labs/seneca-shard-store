@@ -89,3 +89,12 @@ cd test
 mocha shard.test.js --seneca.log.print
 ```
 
+Acknowledgements
+----------------
+
+This project was kindly sponsored by [nearForm](http://nearform.com).
+
+License
+-------
+
+MIT

@@ -15,7 +15,7 @@
     "url": "http://github.com/mcollina/seneca-shard-store/issues"
   },
   "author": "Matteo Collina <hello@matteocollina.com>",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "mocha": "1.18.2",
     "seneca": "0.5.15",
