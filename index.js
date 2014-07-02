@@ -10,6 +10,8 @@ var name = 'shard-store'
 
 var Seneca = require('seneca')
 
+var _ = require('lodash')
+
 module.exports = function(seneca, opts, cb) {
 
   for(var shardId in opts.shards) {
@@ -51,7 +53,7 @@ module.exports = function(seneca, opts, cb) {
 
   function shardWrapAll(args, cb) {
     var seneca = this
-    // TODO should we handle reordering of results?
+
     async.concat(Object.keys(shards.shards), function(shardId, cb) {
       var shard = shards.shards[shardId]
 
@@ -59,9 +61,16 @@ module.exports = function(seneca, opts, cb) {
         if(err) {
           this.log.error(err)
         }
+
         cb(undefined, result)
       })
-    }, cb)
+    }, function(err, result) {
+
+      if(!err && result) {
+        sort(args, result)
+      }
+      cb(err, result)
+    })
   }
 
   var store = {
@@ -90,4 +99,31 @@ module.exports = function(seneca, opts, cb) {
   })
 }
 
+function sort(args, list) {
+  if(args && args.cmd === 'list' && args.q && args.q.sort$) {
+    if(_.isArray(list)) {
+      list.sort(function(a, b) {
+        if(!a && !b) {
+          return 0
+        } else if(a && !b) {
+          return 1
+        } else if(!a && b) {
+          return -1
+        } else {
+          for(var sortAttr in args.q.sort$) {
+            if(a[sortAttr] === b[sortAttr]) {
+              continue
+            } else if (a[sortAttr] < b[sortAttr]) {
+              return +args.q.sort$[sortAttr]
+            } else {
+              return -args.q.sort$[sortAttr]
+            }
+          }
+          return 0
+        }
+      })
 
+    }
+  }
+
+}

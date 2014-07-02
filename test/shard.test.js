@@ -10,6 +10,8 @@ var fs = require('fs')
 var rimraf = require('rimraf')
 var assert = require('assert')
 
+var uuid = require('uuid')
+
 describe('double', function(){
   var si = seneca()
 
@@ -154,6 +156,54 @@ describe('double', function(){
       })
     })
   })
+
+  it('should reorder multi shard aggregate on list.sort$', function(done) {
+
+    var uniqueName = uuid.v4()
+
+    var Product = si.make('product')
+
+    var product1 = Product.make$({name: uniqueName, rank: 0})
+    var product2 = Product.make$({name: uniqueName, rank: 1})
+    var product3 = Product.make$({name: uniqueName, rank: 2})
+    var product4 = Product.make$({name: uniqueName, rank: 3})
+
+    product1.save$(function(err, product) {
+      assert(!err);
+
+    product2.save$(function(err, product) {
+      assert(!err);
+
+    product3.save$(function(err, product) {
+      assert(!err);
+
+    product4.save$(function(err, product) {
+      assert(!err);
+
+      si.act(
+        {
+          role: 'entity',
+          cmd: 'list',
+          q: {
+            name: uniqueName,
+            sort$: {
+              rank: -1
+            }
+          },
+          qent: Product
+        },
+        function( err, orderedProducts ) {
+          assert(!err, err ? err.toString() : '')
+          assert.ok(orderedProducts)
+          assert.equal(orderedProducts, 4)
+          for(var i = 0; i < orderedProducts.length ; i++) {
+            assert.equal(orderedProducts[i].rank, i, 'expected the shard plugin to reorder the aggregate result of a LIST command')
+          }
+          done()
+        }
+      )
+
+    }) }) }) })
+
+  })
 })
-
-
