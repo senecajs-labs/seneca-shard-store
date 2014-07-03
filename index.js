@@ -67,7 +67,7 @@ module.exports = function(seneca, opts, cb) {
     }, function(err, result) {
 
       if(!err && result) {
-        sort(args, result)
+        merge(args, result)
       }
       cb(err, result)
     })
@@ -97,6 +97,31 @@ module.exports = function(seneca, opts, cb) {
 
     cb(null,{name:store.name,tag:tag})
   })
+}
+
+function merge(args, list) {
+  distinct(args, list)
+  sort(args, list)
+}
+
+function distinct(args, list) {
+  if(args && args.cmd === 'list' && args.q && args.q.distinct$) {
+    if(_.isArray(list)) {
+      var distinct = args.q.distinct$
+      var index = 0
+      var visited = {}
+      while(index < list.length) {
+        var item = _.clone(list[index])
+        delete item.id
+        if(!visited.hasOwnProperty(JSON.stringify(item))) {
+          visited[JSON.stringify(item)] = true
+          index++
+        } else {
+          list.splice(index, 1)
+        }
+      }
+    }
+  }
 }
 
 function sort(args, list) {
