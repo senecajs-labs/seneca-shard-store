@@ -16,7 +16,7 @@ module.exports = function(seneca, opts, cb) {
 
   for(var shardId in opts.shards) {
     var shard = opts.shards[shardId]
-    shard.seneca = Seneca()
+    shard.seneca = Seneca(shard.seneca)
     shard.seneca.use( shard.store.plugin, shard.store.options);
   }
 

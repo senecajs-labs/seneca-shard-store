@@ -18,7 +18,7 @@
   "license": "MIT",
   "devDependencies": {
     "mocha": "1.18.2",
-    "seneca": "0.5.15",
+    "seneca": "0.5.21",
     "seneca-jsonfile-store": "mcollina/seneca-jsonfile-store#custom-id",
     "rimraf": "2.2.6"
   },
