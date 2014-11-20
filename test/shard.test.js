@@ -5,51 +5,68 @@
 "use strict";
 
 var seneca = require('seneca')
-var shared = seneca.test.store.shared
+var shared = require('seneca-store-test')
 var fs = require('fs')
 var rimraf = require('rimraf')
 var assert = require('assert')
+var async = require('async')
+
+var si = seneca()
+
+si.__testcount = 0
+var testcount = 0
 
 describe('double', function(){
-  var si = seneca()
 
-  si.use('store-test')
+
+  si.use('../')
 
   var db1 = __dirname + '/db1'
   var db2 = __dirname + '/db2'
 
+  if (fs.existsSync(db1)) {
+    deleteFolderRecursive(db1)
+  }
+  if (fs.existsSync(db2)) {
+    deleteFolderRecursive(db2)
+  }
   fs.mkdirSync(db1)
   fs.mkdirSync(db2)
-
-  si.use(require('seneca-jsonfile-store'),{
-    map: {
-      'store1/-/-': '*'
-    },
-    folder: db1
-  })
-
-  si.use(require('seneca-jsonfile-store'),{
-    map: {
-      'store2/-/-': '*'
-    },
-    folder: db2
-  })
 
   si.use(require('..'),{
     shards: {
       1: {
         zone: 'store1',
-        append: true
+        append: true,
+        store:{
+          plugin:'seneca-jsonfile-store',
+          options:
+          {
+            map: {
+              'store2/-/-': '*'
+            },
+            folder: db2
+          }
+        }
       },
       2: {
         zone: 'store2',
-        append: true
+        append: true,
+        store:{
+          plugin:'seneca-jsonfile-store',
+          options:
+          {
+            map: {
+              'store1/-/-': '*'
+            },
+            folder: db1
+          }
+        }
       }
     }
   })
 
-  si.__testcount = 0
-  var testcount = 0
+
 
   after(function(done) {
     rimraf(db1, function() {
@@ -78,7 +95,7 @@ describe('double', function(){
           assert(!err)
           done()
         })
-      })
+    })
 
   })
 
@@ -95,7 +112,7 @@ describe('double', function(){
           assert(product)
           done()
         })
-      })
+    })
 
   })
 
@@ -154,6 +171,47 @@ describe('double', function(){
       })
     })
   })
+
+  //it('should skip',function(done){
+  //  var Product = si.make('product')
+  //    , product = Product.make$({name:'pear',price:200})
+  //    , completed = prepareCompleted(2, done)
+  //
+  //  var task= []
+  //  for(var i=0;i<20; i++){
+  //
+  //   task.push(function(cb){
+  //     Product = si.make('product')
+  //     product = Product.make$({name:'pear',price:i*100})
+  //     product.save$(function(err, product) {
+  //       cb();
+  //     })
+  //   })
+  //  }
+  //
+  //  task.push(function(cb){
+  //
+  //
+  //  })
+  //
+  //
+  //})
+
+  function deleteFolderRecursive(path) {
+    var files = [];
+    if( fs.existsSync(path) ) {
+      files = fs.readdirSync(path);
+      files.forEach(function(file,index){
+        var curPath = path + "/" + file;
+        if(fs.lstatSync(curPath).isDirectory()) { // recurse
+          deleteFolderRecursive(curPath);
+        } else { // delete file
+          fs.unlinkSync(curPath);
+        }
+      });
+      fs.rmdirSync(path);
+    }
+  };
 })
 
 
