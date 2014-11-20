@@ -172,30 +172,69 @@ describe('double', function(){
     })
   })
 
-  //it('should skip',function(done){
-  //  var Product = si.make('product')
-  //    , product = Product.make$({name:'pear',price:200})
-  //    , completed = prepareCompleted(2, done)
-  //
-  //  var task= []
-  //  for(var i=0;i<20; i++){
-  //
-  //   task.push(function(cb){
-  //     Product = si.make('product')
-  //     product = Product.make$({name:'pear',price:i*100})
-  //     product.save$(function(err, product) {
-  //       cb();
-  //     })
-  //   })
-  //  }
-  //
-  //  task.push(function(cb){
-  //
-  //
-  //  })
-  //
-  //
-  //})
+  it('should skip',function(done){
+    var Product = si.make('product')
+      , product = Product.make$({name:'pear',price:200})
+      , completed = prepareCompleted(2, done)
+
+    var task= []
+    for(var i=0;i<20; i++){
+
+     task.push(function(cb){
+       Product = si.make('product')
+       product = Product.make$({name:'pear',price:i*100})
+       product.save$(function(err, product) {
+         cb();
+       })
+     })
+    }
+
+    task.push(function(cb){
+      Product = si.make('product')
+      product = Product.make$()
+      product.list$({skip$:5},function(err, results){
+        assert.equal(19,results.length)
+
+        done()
+      })
+
+    })
+    async.series(task);
+
+  })
+
+
+
+  it('should limit',function(done){
+    var Product = si.make('product')
+      , product = Product.make$({name:'pear',price:200})
+      , completed = prepareCompleted(2, done)
+
+    var task= []
+    for(var i=0;i<20; i++){
+
+      task.push(function(cb){
+        Product = si.make('product')
+        product = Product.make$({name:'pear',price:i*100})
+        product.save$(function(err, product) {
+          cb();
+        })
+      })
+    }
+
+    task.push(function(cb){
+      Product = si.make('product')
+      product = Product.make$()
+      product.list$({skip$:5,limit$:10},function(err, results){
+        assert.equal(5,results.length)
+
+        done()
+      })
+
+    })
+    async.series(task);
+
+  })
 
   function deleteFolderRecursive(path) {
     var files = [];
