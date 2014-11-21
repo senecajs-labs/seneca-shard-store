@@ -5,55 +5,76 @@
 "use strict";
 
 var seneca = require('seneca')
-var shared = seneca.test.store.shared
+var shared = require('seneca-store-test')
 var fs = require('fs')
 var rimraf = require('rimraf')
 var assert = require('assert')
+var async = require('async')
+var uuid = require('node-uuid')
+
+var si = seneca()
+
+si.__testcount = 0
+var testcount = 0
 
 describe('double', function(){
-  var si = seneca()
 
-  si.use('store-test')
+  var self=this
 
-  var db1 = __dirname + '/db1'
-  var db2 = __dirname + '/db2'
+  si.use('../')
+  beforeEach(function(done){
+    self.db1 = __dirname + '/db1'
+    self.db2 = __dirname + '/db2'
 
-  fs.mkdirSync(db1)
-  fs.mkdirSync(db2)
-
-  si.use(require('seneca-jsonfile-store'),{
-    map: {
-      'store1/-/-': '*'
-    },
-    folder: db1
-  })
-
-  si.use(require('seneca-jsonfile-store'),{
-    map: {
-      'store2/-/-': '*'
-    },
-    folder: db2
-  })
-
-  si.use(require('..'),{
-    shards: {
-      1: {
-        zone: 'store1',
-        append: true
-      },
-      2: {
-        zone: 'store2',
-        append: true
-      }
+    if (fs.existsSync(self.db1)) {
+      deleteFolderRecursive(self.db1)
     }
+    if (fs.existsSync(self.db2)) {
+      deleteFolderRecursive(self.db2)
+    }
+    fs.mkdirSync(self.db1)
+    fs.mkdirSync(self.db2)
+
+    si.use(require('..'),{
+      shards: {
+        1: {
+          zone: 'store1',
+          append: true,
+          store:{
+            plugin:'seneca-jsonfile-store',
+            options:
+            {
+              map: {
+                'store2/-/-': '*'
+              },
+              folder: self.db2
+            }
+          }
+        },
+        2: {
+          zone: 'store2',
+          append: true,
+          store:{
+            plugin:'seneca-jsonfile-store',
+            options:
+            {
+              map: {
+                'store1/-/-': '*'
+              },
+              folder: self.db1
+            }
+          }
+        }
+      }
+    })
+    done()
   })
 
-  si.__testcount = 0
-  var testcount = 0
+
 
   after(function(done) {
-    rimraf(db1, function() {
-      rimraf(db2, done)
+    rimraf(self.db1, function() {
+      rimraf(self.db2, done)
     })
   })
 
@@ -78,7 +99,7 @@ describe('double', function(){
           assert(!err)
           done()
         })
-      })
+    })
 
   })
 
@@ -95,7 +116,7 @@ describe('double', function(){
           assert(product)
           done()
         })
-      })
+    })
 
   })
 
@@ -154,6 +175,138 @@ describe('double', function(){
       })
     })
   })
+
+  it('should reorder multi shard aggregate on list.sort$', function(done) {
+
+    var uniqueName = uuid.v4()
+
+    var Product = si.make('product')
+
+    var product1 = Product.make$({name: uniqueName, rank: 0})
+    var product2 = Product.make$({name: uniqueName, rank: 1})
+    var product3 = Product.make$({name: uniqueName, rank: 2})
+    var product4 = Product.make$({name: uniqueName, rank: 3})
+
+    product1.save$(function(err, product) {
+      assert(!err);
+
+      product2.save$(function(err, product) {
+        assert(!err);
+
+        product3.save$(function(err, product) {
+          assert(!err);
+
+          product4.save$(function(err, product) {
+            assert(!err);
+
+            si.act(
+              {
+                role: 'entity',
+                cmd: 'list',
+                q: {
+                  name: uniqueName,
+                  sort$: {
+                    rank: -1
+                  }
+                },
+                qent: Product
+              },
+              function( err, orderedProducts ) {
+                assert(!err, err ? err.toString() : '')
+                assert.ok(orderedProducts)
+                assert.equal(orderedProducts.length, 4)
+                for(var i = 0; i < orderedProducts.length ; i++) {
+                  assert.equal(orderedProducts[i].rank, i, 'expected the shard plugin to reorder the aggregate result of a LIST command')
+                }
+                done()
+              }
+            )
+
+          })
+        })
+      })
+    })
+  })
+
+  it('should skip',function(done){
+    var Product = si.make('product')
+      , product = Product.make$({name:'pear',price:200})
+      , completed = prepareCompleted(2, done)
+
+    var task= []
+    for(var i=0;i<20; i++){
+
+     task.push(function(cb){
+       Product = si.make('product')
+       product = Product.make$({name:'pear',price:i*100})
+       product.save$(function(err, product) {
+         cb();
+       })
+     })
+    }
+
+    task.push(function(cb){
+      Product = si.make('product')
+      product = Product.make$()
+      product.list$({skip$:5},function(err, results){
+        assert.equal(15,results.length)
+
+        done()
+      })
+
+    })
+    async.series(task);
+
+  })
+
+
+
+  it('should limit',function(done){
+    var Product = si.make('product')
+      , product = Product.make$({name:'pear',price:200})
+      , completed = prepareCompleted(2, done)
+
+    var task= []
+    for(var i=0;i<20; i++){
+
+      task.push(function(cb){
+        Product = si.make('product')
+        product = Product.make$({name:'pear',price:i*100})
+        product.save$(function(err, product) {
+          cb();
+        })
+      })
+    }
+
+    task.push(function(cb){
+      Product = si.make('product')
+      product = Product.make$()
+      product.list$({skip$:5,limit$:10},function(err, results){
+        assert.equal(5,results.length)
+
+        done()
+      })
+
+    })
+    async.series(task);
+
+  })
+
+  function deleteFolderRecursive(path) {
+    var files = [];
+    if( fs.existsSync(path) ) {
+      files = fs.readdirSync(path);
+      files.forEach(function(file,index){
+        var curPath = path + "/" + file;
+        if(fs.lstatSync(curPath).isDirectory()) { // recurse
+          deleteFolderRecursive(curPath);
+        } else { // delete file
+          fs.unlinkSync(curPath);
+        }
+      });
+      fs.rmdirSync(path);
+    }
+  };
 })
 
 
