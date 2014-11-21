@@ -77,18 +77,47 @@ module.exports = function (opts) {
     shard.seneca.act(args, cb)
   }
 
+  /***
+   *
+   args.q.skip$ 0
+   args.q.skip 0
+   args.q.skip$ undefined
+   start index:0 end index:300result.length600 q:{"locale":"en_US","limit$":300}
+   args.q.skip$ 300
+   args.q.skip 300
+   args.q.skip$ undefined
+   start index:300 end index:600result.length600 q:{"locale":"en_US","limit$":300}
+   args.q.skip$ 600
+   args.q.skip 600
+   args.q.skip$ undefined
+   start index:600 end index:600result.length600 q:{"locale":"en_US","limit$":300}
+   *
+   * @param args
+   * @param cb
+   */
+
   function shardWrapAll(args, cb) {
     var seneca = this
-    var skip
-    // TODO should we handle reordering of results?
+    var skip,limit
+
     async.concat(Object.keys(shards.shards), function (shardId, cb) {
       var shard = shards.shards[shardId]
 
-      if(args.q && args.q.skip$){
+      if(args.q && void 0!== args.q.limit$  ){
+
+        if(!limit)
+          limit= args.q.limit$
+      }
+
+
+      if(args.q && void 0!== args.q.skip$){
 
         skip= args.q.skip$
+        args.q.limit$= args.q.limit$+skip
         delete args.q.skip$
       }
+
+
 
       shard.seneca.act(args, function (err, result) {
         if (err) {
@@ -112,13 +141,15 @@ module.exports = function (opts) {
           startindex = skip
         }
 
-        if (args.q.limit$ && args.q.limit$ !== 'all') {
+        if (limit) {
           limitOrSkip = true
-          endindex = result.length > args.q.limit$ ? args.q.limit$ : result.length
+          endindex = result.length > limit+startindex ?limit+startindex : result.length
         }
 
         if (limitOrSkip)
+        {
           result = result.slice(startindex, endindex)
+        }
       }
       if ((args.cmd === 'save' || args.cmd === 'load') && result.length == 0) {
         result = null;

@@ -282,7 +282,7 @@ describe('double', function(){
       Product = si.make('product')
       product = Product.make$()
       product.list$({skip$:5,limit$:10},function(err, results){
-        assert.equal(5,results.length)
+        assert.equal(10,results.length)
 
         done()
       })
