@@ -1,6 +1,6 @@
 {
   "name": "seneca-shard-store",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Sharding for Seneca",
   "main": "index.js",
   "scripts": {
@@ -25,6 +25,8 @@
   "dependencies": {
     "sharder": "0.0.2",
     "async": "0.2.10",
-    "seneca-store-test": "0.2.2"
+    "underscore": "~1.6.0",
+    "node-uuid": "~1.4.1",
+    "seneca-store-test": "git://github.com/piccoloaiutante/seneca-store-test.git#master"
   }
 }

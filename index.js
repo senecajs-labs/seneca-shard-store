@@ -7,6 +7,7 @@
 var Sharder = require('sharder')
 var async = require('async')
 var Seneca = require('seneca')
+var _ = require('underscore');
 var name = 'shard-store'
 
 
@@ -104,19 +105,19 @@ module.exports = function (opts) {
       if (args.cmd === 'list' && args.q) {
         var startindex = 0
         var endindex = result.length
-        var condition = false
+        var limitOrSkip = false
 
         if (skip) {
-          condition = true
+          limitOrSkip = true
           startindex = skip
         }
 
         if (args.q.limit$ && args.q.limit$ !== 'all') {
-          condition = true
-          endindex = args.q.limit$
+          limitOrSkip = true
+          endindex = result.length > args.q.limit$ ? args.q.limit$ : result.length
         }
 
-        if (condition)
+        if (limitOrSkip)
           result = result.slice(startindex, endindex)
       }
       if ((args.cmd === 'save' || args.cmd === 'load') && result.length == 0) {

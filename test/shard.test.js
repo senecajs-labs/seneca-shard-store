@@ -10,6 +10,7 @@ var fs = require('fs')
 var rimraf = require('rimraf')
 var assert = require('assert')
 var async = require('async')
+var uuid = require('node-uuid')
 
 var si = seneca()
 
@@ -18,59 +19,62 @@ var testcount = 0
 
 describe('double', function(){
 
+  var self=this
 
   si.use('../')
+  beforeEach(function(done){
+    self.db1 = __dirname + '/db1'
+    self.db2 = __dirname + '/db2'
 
-  var db1 = __dirname + '/db1'
-  var db2 = __dirname + '/db2'
+    if (fs.existsSync(self.db1)) {
+      deleteFolderRecursive(self.db1)
+    }
+    if (fs.existsSync(self.db2)) {
+      deleteFolderRecursive(self.db2)
+    }
+    fs.mkdirSync(self.db1)
+    fs.mkdirSync(self.db2)
 
-  if (fs.existsSync(db1)) {
-    deleteFolderRecursive(db1)
-  }
-  if (fs.existsSync(db2)) {
-    deleteFolderRecursive(db2)
-  }
-  fs.mkdirSync(db1)
-  fs.mkdirSync(db2)
-
-  si.use(require('..'),{
-    shards: {
-      1: {
-        zone: 'store1',
-        append: true,
-        store:{
-          plugin:'seneca-jsonfile-store',
-          options:
-          {
-            map: {
-              'store2/-/-': '*'
-            },
-            folder: db2
+    si.use(require('..'),{
+      shards: {
+        1: {
+          zone: 'store1',
+          append: true,
+          store:{
+            plugin:'seneca-jsonfile-store',
+            options:
+            {
+              map: {
+                'store2/-/-': '*'
+              },
+              folder: self.db2
+            }
           }
-        }
-      },
-      2: {
-        zone: 'store2',
-        append: true,
-        store:{
-          plugin:'seneca-jsonfile-store',
-          options:
-          {
-            map: {
-              'store1/-/-': '*'
-            },
-            folder: db1
+        },
+        2: {
+          zone: 'store2',
+          append: true,
+          store:{
+            plugin:'seneca-jsonfile-store',
+            options:
+            {
+              map: {
+                'store1/-/-': '*'
+              },
+              folder: self.db1
+            }
           }
         }
       }
-    }
+    })
+    done()
   })
 
 
 
   after(function(done) {
-    rimraf(db1, function() {
-      rimraf(db2, done)
+    rimraf(self.db1, function() {
+      rimraf(self.db2, done)
     })
   })
 
@@ -172,6 +176,58 @@ describe('double', function(){
     })
   })
 
+  it('should reorder multi shard aggregate on list.sort$', function(done) {
+
+    var uniqueName = uuid.v4()
+
+    var Product = si.make('product')
+
+    var product1 = Product.make$({name: uniqueName, rank: 0})
+    var product2 = Product.make$({name: uniqueName, rank: 1})
+    var product3 = Product.make$({name: uniqueName, rank: 2})
+    var product4 = Product.make$({name: uniqueName, rank: 3})
+
+    product1.save$(function(err, product) {
+      assert(!err);
+
+      product2.save$(function(err, product) {
+        assert(!err);
+
+        product3.save$(function(err, product) {
+          assert(!err);
+
+          product4.save$(function(err, product) {
+            assert(!err);
+
+            si.act(
+              {
+                role: 'entity',
+                cmd: 'list',
+                q: {
+                  name: uniqueName,
+                  sort$: {
+                    rank: -1
+                  }
+                },
+                qent: Product
+              },
+              function( err, orderedProducts ) {
+                assert(!err, err ? err.toString() : '')
+                assert.ok(orderedProducts)
+                assert.equal(orderedProducts.length, 4)
+                for(var i = 0; i < orderedProducts.length ; i++) {
+                  assert.equal(orderedProducts[i].rank, i, 'expected the shard plugin to reorder the aggregate result of a LIST command')
+                }
+                done()
+              }
+            )
+
+          })
+        })
+      })
+    })
+  })
+
   it('should skip',function(done){
     var Product = si.make('product')
       , product = Product.make$({name:'pear',price:200})
@@ -193,7 +249,7 @@ describe('double', function(){
       Product = si.make('product')
       product = Product.make$()
       product.list$({skip$:5},function(err, results){
-        assert.equal(19,results.length)
+        assert.equal(15,results.length)
 
         done()
       })
