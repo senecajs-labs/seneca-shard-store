@@ -77,25 +77,6 @@ module.exports = function (opts) {
     shard.seneca.act(args, cb)
   }
 
-  /***
-   *
-   args.q.skip$ 0
-   args.q.skip 0
-   args.q.skip$ undefined
-   start index:0 end index:300result.length600 q:{"locale":"en_US","limit$":300}
-   args.q.skip$ 300
-   args.q.skip 300
-   args.q.skip$ undefined
-   start index:300 end index:600result.length600 q:{"locale":"en_US","limit$":300}
-   args.q.skip$ 600
-   args.q.skip 600
-   args.q.skip$ undefined
-   start index:600 end index:600result.length600 q:{"locale":"en_US","limit$":300}
-   *
-   * @param args
-   * @param cb
-   */
-
   function shardWrapAll(args, cb) {
     var seneca = this
     var skip,limit
