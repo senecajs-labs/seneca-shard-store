@@ -1,4 +1,11 @@
+![Seneca](http://senecajs.org/files/assets/seneca-logo.png)
+> A [Seneca.js][] data storage plugin
+
 # seneca-shard-store
+
+[![Gitter][gitter-badge]][gitter-url]
+
+[![js-standard-style][standard-badge]][standard-style]
 
 ### Node.js seneca data storage module that uses multiple stores
 
@@ -7,10 +14,21 @@ storage engine that uses multiple stores, called shards.
 The data is divided equally at time of creation, using an id
 built by the [sharder](http://npm.im/sharder) module.
 
+## Install
+
+```sh
+npm install seneca
+npm install seneca-shard-store
+```
+
+
 ### Support
 
-If you're using this module, feel free to contact me on twitter if you
-have any questions! :) [@matteocollina](http://twitter.com/matteocollina)
+If you're using this module, and need help, you can:
+
+- Post a [github issue][],
+- Tweet to [@senecajs][],
+- Ask on the [Gitter][gitter-url].
 
 
 ### Quick example
@@ -58,12 +76,6 @@ seneca.ready(function(){
 ```
 
 
-## Install
-
-```sh
-npm install seneca
-npm install seneca-shard-store
-```
 
 
 ## Usage
@@ -94,7 +106,20 @@ Acknowledgements
 
 This project was kindly sponsored by [nearForm](http://nearform.com).
 
-License
--------
+## License
+Copyright Richard Rodger and other contributors 2015, Licensed under [MIT][].
 
-MIT
+
+[travis-badge]: https://travis-ci.org/senecajs/seneca-shard-store.svg
+[travis-url]: https://travis-ci.org/senecajs/seneca-shard-store
+[gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
+[gitter-url]: https://gitter.im/senecajs/seneca
+[standard-badge]: https://raw.githubusercontent.com/feross/standard/master/badge.png
+[standard-style]: https://github.com/feross/standard
+
+[MIT]: ./LICENSE
+[Senecajs org]: https://github.com/senecajs/
+[senecajs.org]: http://senecajs.org/
+[Seneca.js]: https://www.npmjs.com/package/seneca
+[github issue]: https://github.com/rjrodger/seneca-shard-store/issues
+[@senecajs]: http://twitter.com/senecajs  
