@@ -20,17 +20,12 @@ built by the [sharder](http://npm.im/sharder) module.
 npm install seneca
 npm install seneca-shard-store
 ```
+## Test
 
-
-### Support
-
-If you're using this module, and need help, you can:
-
-- Post a [github issue][],
-- Tweet to [@senecajs][],
-- Ask on the [Gitter][gitter-url].
-
-
+```bash
+cd test
+mocha shard.test.js --seneca.log.print
+```
 ### Quick example
 
 This example uses two
@@ -75,9 +70,6 @@ seneca.ready(function(){
 })
 ```
 
-
-
-
 ## Usage
 
 You don't use this module directly. It provides an underlying data storage engine for the Seneca entity API:
@@ -94,12 +86,16 @@ entity.remove$( {id: ...}, function(err,entity){ ... } )
 ```
 
 
-## Test
+### Support
 
-```bash
-cd test
-mocha shard.test.js --seneca.log.print
-```
+If you're using this module, and need help, you can:
+
+- Post a [github issue][],
+- Tweet to [@senecajs][],
+- Ask on the [Gitter][gitter-url].
+
+
+
 
 ## Contributing
 The [Senecajs org][] encourage open participation. If you feel you can help in any way, be it with
