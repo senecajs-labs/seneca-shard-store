@@ -106,7 +106,7 @@ documentation, examples, extra testing, or new features please get in touch.
 This project was kindly sponsored by [nearForm](http://nearform.com).
 
 ## License
-Copyright Richard Rodger and other contributors 2015, Licensed under [MIT][].
+Copyright Matteo Collina and other contributors 2015, Licensed under [MIT][].
 
 
 [travis-badge]: https://travis-ci.org/senecajs/seneca-shard-store.svg
