@@ -16,17 +16,48 @@ var lab = exports.lab = Lab.script()
 var describe = lab.describe
 var it = lab.it
 
+var db1 = __dirname + '/db1'
+var db2 = __dirname + '/db2'
+
 var si = seneca({
   log: 'silent',
   default_plugins: {'mem-store': false}
 })
+si.use(require('..'),{
+  shards: {
+    1: {
+      zone: 'store1',
+      append: true,
+      store: {
+        plugin:'seneca-jsonfile-store',
+        options:
+        {
+          map: {
+            'store2/-/-': '*'
+          },
+          folder: db2
+        }
+      }
+    },
+    2: {
+      zone: 'store2',
+      append: true,
+      store: {
+        plugin:'seneca-jsonfile-store',
+        options:
+        {
+          map: {
+            'store1/-/-': '*'
+          },
+          folder: db1
+        }
+      }
+    }
+  }
+})
 
 si.__testcount = 0
 var testcount = 0
-
-var db1 = __dirname + '/db1'
-var db2 = __dirname + '/db2'
-
 describe('shard-store', function(){
 
   var beforeEach = lab.beforeEach;
@@ -34,50 +65,18 @@ describe('shard-store', function(){
 
   var self=this
 
-  si.use('../')
-  beforeEach(function(done){
-    if (fs.existsSync(db1)) {
-      deleteFolderRecursive(db1)
-    }
-    if (fs.existsSync(db2)) {
-      deleteFolderRecursive(db2)
-    }
-    fs.mkdirSync(db1)
-    fs.mkdirSync(db2)
-
-    si.use(require('..'),{
-      shards: {
-        1: {
-          zone: 'store1',
-          append: true,
-          store:{
-            plugin:'seneca-jsonfile-store',
-            options:
-            {
-              map: {
-                'store2/-/-': '*'
-              },
-              folder: db2
-            }
-          }
-        },
-        2: {
-          zone: 'store2',
-          append: true,
-          store:{
-            plugin:'seneca-jsonfile-store',
-            options:
-            {
-              map: {
-                'store1/-/-': '*'
-              },
-              folder: db1
-            }
-          }
-        }
+  beforeEach(function clearDb (done) {
+    async.series([
+      function clearFoo (next) {
+        si.make('foo').remove$({ all$: true }, next)
+      },
+      function clearBar (next) {
+        si.make('zen', 'moon', 'bar').remove$({ all$: true }, next)
+      },
+      function clearProduct (next) {
+        si.make('product').remove$({ all$: true }, next)
       }
-    })
-    done()
+    ], done)
   })
 
   after(function(done) {
