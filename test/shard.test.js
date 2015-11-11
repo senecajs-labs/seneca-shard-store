@@ -1,5 +1,4 @@
 /*jslint node: true, asi: true */
-/*globals describe, it */
 /* Copyright (c) 2014 Matteo Collina, ISC License */
 
 "use strict";
@@ -12,28 +11,39 @@ var assert = require('assert')
 var async = require('async')
 var uuid = require('node-uuid')
 
-var si = seneca()
+var Lab = require('lab')
+var lab = exports.lab = Lab.script()
+var describe = lab.describe
+var it = lab.it
+
+var si = seneca({
+  log: 'silent',
+  default_plugins: {'mem-store': false}
+})
 
 si.__testcount = 0
 var testcount = 0
 
-describe('double', function(){
+var db1 = __dirname + '/db1'
+var db2 = __dirname + '/db2'
+
+describe('shard-store', function(){
+
+  var beforeEach = lab.beforeEach;
+  var after = lab.after;
 
   var self=this
 
   si.use('../')
   beforeEach(function(done){
-    self.db1 = __dirname + '/db1'
-    self.db2 = __dirname + '/db2'
-
-    if (fs.existsSync(self.db1)) {
-      deleteFolderRecursive(self.db1)
+    if (fs.existsSync(db1)) {
+      deleteFolderRecursive(db1)
     }
-    if (fs.existsSync(self.db2)) {
-      deleteFolderRecursive(self.db2)
+    if (fs.existsSync(db2)) {
+      deleteFolderRecursive(db2)
     }
-    fs.mkdirSync(self.db1)
-    fs.mkdirSync(self.db2)
+    fs.mkdirSync(db1)
+    fs.mkdirSync(db2)
 
     si.use(require('..'),{
       shards: {
@@ -47,7 +57,7 @@ describe('double', function(){
               map: {
                 'store2/-/-': '*'
               },
-              folder: self.db2
+              folder: db2
             }
           }
         },
@@ -61,7 +71,7 @@ describe('double', function(){
               map: {
                 'store1/-/-': '*'
               },
-              folder: self.db1
+              folder: db1
             }
           }
         }
@@ -70,11 +80,9 @@ describe('double', function(){
     done()
   })
 
-
-
   after(function(done) {
-    rimraf(self.db1, function() {
-      rimraf(self.db2, done)
+    rimraf(db1, function() {
+      rimraf(db2, done)
     })
   })
 
