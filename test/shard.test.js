@@ -19,6 +19,9 @@ var it = lab.it
 var db1 = __dirname + '/db1'
 var db2 = __dirname + '/db2'
 
+fs.mkdirSync(db1);
+fs.mkdirSync(db2);
+
 var si = seneca({
   log: 'silent',
   default_plugins: {'mem-store': false}
