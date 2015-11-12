@@ -93,10 +93,6 @@ describe('shard-store', function(){
     shared.basictest(si,done)
   })
 
-  it('close', function(done){
-    shared.closetest(si,testcount,done)
-  })
-
   it('load with q.id', function(done) {
 
     var Product = si.make('product')
@@ -317,6 +313,10 @@ describe('shard-store', function(){
       fs.rmdirSync(path);
     }
   };
+
+  it('close', function(done){
+    shared.closetest(si,testcount,done)
+  })
 })
 
 

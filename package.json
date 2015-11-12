@@ -18,7 +18,7 @@
   "license": "MIT",
   "devDependencies": {
     "lab": "^6.2.0",
-    "seneca": "0.5.20",
+    "seneca": "plugin",
     "seneca-jsonfile-store": "~0.2.2",
     "rimraf": "~2.4.3"
   },
