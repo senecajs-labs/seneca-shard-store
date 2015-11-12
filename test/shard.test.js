@@ -1,7 +1,6 @@
-/*jslint node: true, asi: true */
+/* jslint node: true, asi: true */
 /* Copyright (c) 2014 Matteo Collina, ISC License */
-
-"use strict";
+'use strict'
 
 var seneca = require('seneca')
 var shared = require('seneca-store-test')
@@ -19,22 +18,21 @@ var it = lab.it
 var db1 = __dirname + '/db1'
 var db2 = __dirname + '/db2'
 
-fs.mkdirSync(db1);
-fs.mkdirSync(db2);
+fs.mkdirSync(db1)
+fs.mkdirSync(db2)
 
 var si = seneca({
   log: 'silent',
   default_plugins: {'mem-store': false}
 })
-si.use(require('..'),{
+si.use(require('..'), {
   shards: {
     1: {
       zone: 'store1',
       append: true,
       store: {
-        plugin:'seneca-jsonfile-store',
-        options:
-        {
+        plugin: 'seneca-jsonfile-store',
+        options: {
           map: {
             'store2/-/-': '*'
           },
@@ -46,9 +44,8 @@ si.use(require('..'),{
       zone: 'store2',
       append: true,
       store: {
-        plugin:'seneca-jsonfile-store',
-        options:
-        {
+        plugin: 'seneca-jsonfile-store',
+        options: {
           map: {
             'store1/-/-': '*'
           },
@@ -61,12 +58,9 @@ si.use(require('..'),{
 
 si.__testcount = 0
 var testcount = 0
-describe('shard-store', function(){
-
-  var beforeEach = lab.beforeEach;
-  var after = lab.after;
-
-  var self=this
+describe('shard-store', function () {
+  var beforeEach = lab.beforeEach
+  var after = lab.after
 
   beforeEach(function clearDb (done) {
     async.series([
@@ -82,55 +76,53 @@ describe('shard-store', function(){
     ], done)
   })
 
-  after(function(done) {
-    rimraf(db1, function() {
+  after(function (done) {
+    rimraf(db1, function () {
       rimraf(db2, done)
     })
   })
 
-  it('basic', function(done){
+  it('basic', function (done) {
     testcount++
-    shared.basictest(si,done)
+    shared.basictest(si, done)
   })
 
-  it('load with q.id', function(done) {
-
+  it('load with q.id', function (done) {
     var Product = si.make('product')
-    var product = Product.make$({name:'pear',price:200})
-    product.save$(function(err, product) {
-      assert(!err);
+    var product = Product.make$({ name: 'pear', price: 200 })
+    product.save$(function (err, product) {
+      assert(!err)
       si.act(
-        { role:'entity', cmd:'load', q:{id:product.id}, qent:Product},
-        function( err, product ) {
+        { role: 'entity', cmd: 'load', q: { id: product.id }, qent: Product },
+        function (err, product) {
           assert(!err)
           done()
         })
     })
-
   })
 
-  it('load with q.name', function(done) {
-
+  it('load with q.name', function (done) {
     var Product = si.make('product')
-    var product = Product.make$({name:'pear',price:200})
-    product.save$(function(err, product) {
-      assert(!err);
+    var product = Product.make$({ name: 'pear', price: 200 })
+    product.save$(function (err, product) {
+      assert(!err)
       si.act(
-        { role:'entity', cmd:'load', q:{name:'pear'}, qent:Product},
-        function( err, product ) {
+        { role: 'entity', cmd: 'load', q: { name: 'pear' }, qent: Product },
+        function (err, product) {
           assert(!err)
           assert(product)
           done()
         })
     })
-
   })
 
-  function prepareCompleted(num, done) {
+  function prepareCompleted (num, done) {
     var received = 0
-      , seen = 0
+    var seen = 0
 
-    return function completed(err, p) {
+    return function completed (err, p) {
+      assert(!err)
+
       received++
       if (p) {
         console.log('product', p)
@@ -144,48 +136,48 @@ describe('shard-store', function(){
     }
   }
 
-  it('should store it only in a store', function(done) {
-
+  it('should store it only in a store', function (done) {
     var Product = si.make('product')
-      , product = Product.make$({name:'pear',price:200})
-      , completed = prepareCompleted(2, done)
+    var product = Product.make$({ name: 'pear', price: 200 })
+    var completed = prepareCompleted(2, done)
 
-    product.save$(function(err, product) {
-      assert(!err);
+    product.save$(function (err, product) {
+      assert(!err)
       si.act(
-        { role:'entity', zone: 'store1', cmd:'load', q:{id:product.id}, qent:Product},
+        { role: 'entity', zone: 'store1', cmd: 'load', q: { id: product.id }, qent: Product },
         completed)
 
       si.act(
-        { role:'entity', zone: 'store2', cmd:'load', q:{id:product.id}, qent:Product},
+        { role: 'entity', zone: 'store2', cmd: 'load', q: { id: product.id }, qent: Product },
         completed)
     })
   })
 
-  it('should store it only in a store with an update', function(done) {
-
+  it('should store it only in a store with an update', function (done) {
     var Product = si.make('product')
-      , product = Product.make$({name:'pear',price:200})
-      , completed = prepareCompleted(2, done)
+    var product = Product.make$({ name: 'pear', price: 200 })
+    var completed = prepareCompleted(2, done)
 
-    product.save$(function(err, product) {
+    product.save$(function (err, product) {
+      assert(!err)
+
       product.price = 300
-      product.save$(function(err, product) {
+      product.save$(function (err, product) {
+        assert(!err)
+
         si.act(
-          { role:'entity', zone: 'store1', cmd:'load', q:{id:product.id}, qent:Product},
+          { role: 'entity', zone: 'store1', cmd: 'load', q: { id: product.id }, qent: Product },
           completed)
 
         si.act(
-          { role:'entity', zone: 'store2', cmd:'load', q:{id:product.id}, qent:Product},
+          { role: 'entity', zone: 'store2', cmd: 'load', q: { id: product.id }, qent: Product },
           completed)
       })
     })
   })
 
-  it('should reorder multi shard aggregate on list.sort$', function(done) {
-
+  it('should reorder multi shard aggregate on list.sort$', function (done) {
     var uniqueName = uuid.v4()
-
     var Product = si.make('product')
 
     var product1 = Product.make$({name: uniqueName, rank: 0})
@@ -193,17 +185,17 @@ describe('shard-store', function(){
     var product3 = Product.make$({name: uniqueName, rank: 2})
     var product4 = Product.make$({name: uniqueName, rank: 3})
 
-    product1.save$(function(err, product) {
-      assert(!err);
+    product1.save$(function (err, product) {
+      assert(!err)
 
-      product2.save$(function(err, product) {
-        assert(!err);
+      product2.save$(function (err, product) {
+        assert(!err)
 
-        product3.save$(function(err, product) {
-          assert(!err);
+        product3.save$(function (err, product) {
+          assert(!err)
 
-          product4.save$(function(err, product) {
-            assert(!err);
+          product4.save$(function (err, product) {
+            assert(!err)
 
             si.act(
               {
@@ -217,106 +209,80 @@ describe('shard-store', function(){
                 },
                 qent: Product
               },
-              function( err, orderedProducts ) {
+              function (err, orderedProducts) {
                 assert(!err, err ? err.toString() : '')
                 assert.ok(orderedProducts)
                 assert.equal(orderedProducts.length, 4)
-                for(var i = 0; i < orderedProducts.length ; i++) {
+                for (var i = 0; i < orderedProducts.length; i++) {
                   assert.equal(orderedProducts[i].rank, i, 'expected the shard plugin to reorder the aggregate result of a LIST command')
                 }
                 done()
               }
             )
-
           })
         })
       })
     })
   })
 
-  it('should skip',function(done){
+  it('should skip', function (done) {
     var Product = si.make('product')
-      , product = Product.make$({name:'pear',price:200})
-      , completed = prepareCompleted(2, done)
+    var product = Product.make$({ name: 'pear', price: 200 })
 
-    var task= []
-    for(var i=0;i<20; i++){
-
-     task.push(function(cb){
-       Product = si.make('product')
-       product = Product.make$({name:'pear',price:i*100})
-       product.save$(function(err, product) {
-         cb();
-       })
-     })
-    }
-
-    task.push(function(cb){
-      Product = si.make('product')
-      product = Product.make$()
-      product.list$({skip$:5},function(err, results){
-        assert.equal(15,results.length)
-
-        done()
-      })
-
-    })
-    async.series(task);
-
-  })
-
-
-
-  it('should limit',function(done){
-    var Product = si.make('product')
-      , product = Product.make$({name:'pear',price:200})
-      , completed = prepareCompleted(2, done)
-
-    var task= []
-    for(var i=0;i<20; i++){
-
-      task.push(function(cb){
+    var task = []
+    for (var i = 0; i < 20; i++) {
+      task.push(function (cb) {
         Product = si.make('product')
-        product = Product.make$({name:'pear',price:i*100})
-        product.save$(function(err, product) {
-          cb();
+        product = Product.make$({ name: 'pear', price: i * 100 })
+        product.save$(function (err, product) {
+          assert(!err)
+          cb()
         })
       })
     }
 
-    task.push(function(cb){
+    task.push(function (cb) {
       Product = si.make('product')
       product = Product.make$()
-      product.list$({skip$:5,limit$:10},function(err, results){
-        assert.equal(10,results.length)
-
+      product.list$({ skip$: 5 }, function (err, results) {
+        assert(!err)
+        assert.equal(15, results.length)
         done()
       })
-
     })
-    async.series(task);
-
+    async.series(task)
   })
 
-  function deleteFolderRecursive(path) {
-    var files = [];
-    if( fs.existsSync(path) ) {
-      files = fs.readdirSync(path);
-      files.forEach(function(file,index){
-        var curPath = path + "/" + file;
-        if(fs.lstatSync(curPath).isDirectory()) { // recurse
-          deleteFolderRecursive(curPath);
-        } else { // delete file
-          fs.unlinkSync(curPath);
-        }
-      });
-      fs.rmdirSync(path);
-    }
-  };
+  it('should limit', function (done) {
+    var Product = si.make('product')
+    var product = Product.make$({ name: 'pear', price: 200 })
 
-  it('close', function(done){
-    shared.closetest(si,testcount,done)
+    var task = []
+    for (var i = 0; i < 20; i++) {
+      task.push(function (cb) {
+        Product = si.make('product')
+        product = Product.make$({ name: 'pear', price: i * 100 })
+        product.save$(function (err, product) {
+          assert(!err)
+          cb()
+        })
+      })
+    }
+
+    task.push(function (cb) {
+      Product = si.make('product')
+      product = Product.make$()
+      product.list$({ skip$: 5, limit$: 10 }, function (err, results) {
+        assert(!err)
+        assert.equal(10, results.length)
+        done()
+      })
+    })
+
+    async.series(task)
+  })
+
+  it('close', function (done) {
+    shared.closetest(si, testcount, done)
   })
 })
-
-
