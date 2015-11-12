@@ -4,7 +4,7 @@
   "description": "Sharding for Seneca",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test/"
+    "test": "lab test/*.test.js -r console -v"
   },
   "website": "https://github.com/mcollina/seneca-shard-store",
   "repository": {
@@ -17,16 +17,16 @@
   "author": "Matteo Collina <hello@matteocollina.com>",
   "license": "MIT",
   "devDependencies": {
-    "mocha": "1.20.1",
-    "seneca": "0.5.20",
-    "seneca-jsonfile-store": "mcollina/seneca-jsonfile-store#custom-id",
-    "rimraf": "2.2.6"
+    "lab": "^6.2.0",
+    "seneca": "plugin",
+    "seneca-jsonfile-store": "~0.2.2",
+    "rimraf": "~2.4.3"
   },
   "dependencies": {
-    "sharder": "0.0.2",
-    "async": "0.2.10",
-    "underscore": "~1.6.0",
+    "async": "~1.5.0",
     "node-uuid": "~1.4.1",
-    "seneca-store-test": "git://github.com/piccoloaiutante/seneca-store-test.git#master"
+    "seneca-store-test": "git://github.com/piccoloaiutante/seneca-store-test.git#master",
+    "sharder": "~0.1.1",
+    "underscore": "~1.8.3"
   }
 }

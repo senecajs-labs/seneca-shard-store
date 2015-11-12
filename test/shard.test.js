@@ -1,5 +1,4 @@
 /*jslint node: true, asi: true */
-/*globals describe, it */
 /* Copyright (c) 2014 Matteo Collina, ISC License */
 
 "use strict";
@@ -12,79 +11,86 @@ var assert = require('assert')
 var async = require('async')
 var uuid = require('node-uuid')
 
-var si = seneca()
+var Lab = require('lab')
+var lab = exports.lab = Lab.script()
+var describe = lab.describe
+var it = lab.it
+
+var db1 = __dirname + '/db1'
+var db2 = __dirname + '/db2'
+
+fs.mkdirSync(db1);
+fs.mkdirSync(db2);
+
+var si = seneca({
+  log: 'silent',
+  default_plugins: {'mem-store': false}
+})
+si.use(require('..'),{
+  shards: {
+    1: {
+      zone: 'store1',
+      append: true,
+      store: {
+        plugin:'seneca-jsonfile-store',
+        options:
+        {
+          map: {
+            'store2/-/-': '*'
+          },
+          folder: db2
+        }
+      }
+    },
+    2: {
+      zone: 'store2',
+      append: true,
+      store: {
+        plugin:'seneca-jsonfile-store',
+        options:
+        {
+          map: {
+            'store1/-/-': '*'
+          },
+          folder: db1
+        }
+      }
+    }
+  }
+})
 
 si.__testcount = 0
 var testcount = 0
+describe('shard-store', function(){
 
-describe('double', function(){
+  var beforeEach = lab.beforeEach;
+  var after = lab.after;
 
   var self=this
 
-  si.use('../')
-  beforeEach(function(done){
-    self.db1 = __dirname + '/db1'
-    self.db2 = __dirname + '/db2'
-
-    if (fs.existsSync(self.db1)) {
-      deleteFolderRecursive(self.db1)
-    }
-    if (fs.existsSync(self.db2)) {
-      deleteFolderRecursive(self.db2)
-    }
-    fs.mkdirSync(self.db1)
-    fs.mkdirSync(self.db2)
-
-    si.use(require('..'),{
-      shards: {
-        1: {
-          zone: 'store1',
-          append: true,
-          store:{
-            plugin:'seneca-jsonfile-store',
-            options:
-            {
-              map: {
-                'store2/-/-': '*'
-              },
-              folder: self.db2
-            }
-          }
-        },
-        2: {
-          zone: 'store2',
-          append: true,
-          store:{
-            plugin:'seneca-jsonfile-store',
-            options:
-            {
-              map: {
-                'store1/-/-': '*'
-              },
-              folder: self.db1
-            }
-          }
-        }
+  beforeEach(function clearDb (done) {
+    async.series([
+      function clearFoo (next) {
+        si.make('foo').remove$({ all$: true }, next)
+      },
+      function clearBar (next) {
+        si.make('zen', 'moon', 'bar').remove$({ all$: true }, next)
+      },
+      function clearProduct (next) {
+        si.make('product').remove$({ all$: true }, next)
       }
-    })
-    done()
+    ], done)
   })
 
-
-
   after(function(done) {
-    rimraf(self.db1, function() {
-      rimraf(self.db2, done)
+    rimraf(db1, function() {
+      rimraf(db2, done)
     })
   })
 
   it('basic', function(done){
     testcount++
     shared.basictest(si,done)
-  })
-
-  it('close', function(done){
-    shared.closetest(si,testcount,done)
   })
 
   it('load with q.id', function(done) {
@@ -307,6 +313,10 @@ describe('double', function(){
       fs.rmdirSync(path);
     }
   };
+
+  it('close', function(done){
+    shared.closetest(si,testcount,done)
+  })
 })
 
 
