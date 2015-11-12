@@ -2,7 +2,7 @@
 > A [Seneca.js][] data storage plugin
 
 # seneca-shard-store
-
+[![Build Status][travis-badge]][travis-url]
 [![Gitter][gitter-badge]][gitter-url]
 
 ### Node.js seneca data storage module that uses multiple stores
@@ -117,4 +117,4 @@ Copyright Matteo Collina and other contributors 2015, Licensed under [MIT][].
 [senecajs.org]: http://senecajs.org/
 [Seneca.js]: https://www.npmjs.com/package/seneca
 [github issue]: https://github.com/senecajs/seneca-shard-store/issues
-[@senecajs]: http://twitter.com/senecajs  
+[@senecajs]: http://twitter.com/senecajs
