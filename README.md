@@ -110,7 +110,7 @@ Copyright Matteo Collina and other contributors 2014-2016, Licensed under [MIT][
 [travis-badge]: https://travis-ci.org/senecajs-labs/seneca-shard-store.svg
 [travis-url]: https://travis-ci.org/senecajs-labs/seneca-shard-store
 [gitter-badge]: https://badges.gitter.im/Join%20Chat.svg
-[gitter-url]: https://gitter.im/senecajs-labs/seneca
+[gitter-url]: https://gitter.im/senecajs/seneca
 
 [MIT]: ./LICENSE
 [Senecajs org]: https://github.com/senecajs/
