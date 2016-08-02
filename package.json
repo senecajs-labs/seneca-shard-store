@@ -6,13 +6,13 @@
   "scripts": {
     "test": "lab test/*.test.js -r console -v --lint"
   },
-  "website": "https://github.com/mcollina/seneca-shard-store",
+  "website": "https://github.com/senecajs-labs/seneca-shard-store",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mcollina/seneca-shard-store.git"
+    "url": "https://github.com/senecajs-labs/seneca-shard-store.git"
   },
   "bugs": {
-    "url": "http://github.com/mcollina/seneca-shard-store/issues"
+    "url": "http://github.com/senecajs-labs/seneca-shard-store/issues"
   },
   "author": "Matteo Collina <hello@matteocollina.com>",
   "license": "MIT",
