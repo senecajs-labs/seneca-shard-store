@@ -8,7 +8,7 @@ var fs = require('fs')
 var rimraf = require('rimraf')
 var assert = require('assert')
 var async = require('async')
-var uuid = require('node-uuid')
+var uuid = require('uuid')
 
 var Lab = require('lab')
 var lab = exports.lab = Lab.script()
