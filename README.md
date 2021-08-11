@@ -5,6 +5,9 @@
 [![Build Status][travis-badge]][travis-url]
 [![Gitter][gitter-badge]][gitter-url]
 
+| ![Voxgig](https://www.voxgig.com/res/img/vgt01r.png) | This open source module is sponsored and supported by [Voxgig](https://www.voxgig.com). |
+|---|---|
+
 ### Node.js seneca data storage module that uses multiple stores
 
 This module is a plugin for the Seneca framework. It provides a
